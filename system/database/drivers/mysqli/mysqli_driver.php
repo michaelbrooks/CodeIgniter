@@ -67,15 +67,23 @@ class CI_DB_mysqli_driver extends CI_DB {
 	 */
 	function db_connect()
 	{
-		if ($this->port != '')
-		{
-			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port);
-		}
-		else
-		{
-			return @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
-		}
-
+        if (isset($this->use_ssl) && $this->use_ssl === TRUE) {
+            $mysqli = mysqli_init();
+            if ($mysqli) {
+                $connected = ($this->port != '') 
+                    ? @mysqli_real_connect($mysqli, $this->hostname, $this->username, $this->password, $this->database, $this->port, NULL, MYSQLI_CLIENT_SSL) 
+                    : @mysqli_real_connect($mysqli, $this->hostname, $this->username, $this->password, $this->database, NULL, NULL, MYSQLI_CLIENT_SSL);
+                if ($connected) {
+                    return $mysqli;
+                } else {
+                    return FALSE;
+                }
+            }
+        } else {
+            return ($this->port != '') 
+                ? @mysqli_connect($this->hostname, $this->username, $this->password, $this->database, $this->port) 
+                : @mysqli_connect($this->hostname, $this->username, $this->password, $this->database);
+        }
 	}
 
 	// --------------------------------------------------------------------
